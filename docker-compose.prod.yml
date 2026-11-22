@@ -1,0 +1,73 @@
+# Production-oriented Compose (local verification). Does NOT remove existing volumes.
+# Database port defaults to 5433 on host to avoid conflict with local PostgreSQL on 5432.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: pulsetrace-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-pulsetrace}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-pulsetrace}
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - pulsetrace_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pulsetrace} -d ${POSTGRES_DB:-pulsetrace}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: pulsetrace-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      APP_ENV: production
+      LOG_STORAGE_PATH: /app/data/uploads
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-pulsetrace}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-pulsetrace}
+    volumes:
+      - pulsetrace_uploads:/app/data/uploads
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health/database', timeout=5)",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # Empty = same-origin; nginx proxies /api/ to the backend service
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-}
+    container_name: pulsetrace-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-8080}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  pulsetrace_pgdata:
+    external: false
+  pulsetrace_uploads:

@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-graphite-700;
+  }
+
+  body {
+    @apply bg-graphite-950 text-slate-200 antialiased;
+  }
+
+  ::selection {
+    @apply bg-accent-indigo/30 text-white;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-accent-indigo/50 ring-offset-2 ring-offset-graphite-950;
+  }
+}

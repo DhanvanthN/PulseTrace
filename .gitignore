@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+
+# Environment (never commit real secrets)
+.env
+.env.*
+!.env.example
+backend/.env
+deploy/pulsetrace-prod-qa.env
+deploy/qa-persist-state.json
+
+# Build / dist
+frontend/dist/
+*.egg-info/
+dist/
+build/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Test / coverage
+.coverage
+htmlcov/
+.pytest_cache/
+frontend/coverage/
+frontend/playwright-report/
+frontend/test-results/
+
+# Logs
+*.log
+logs/
+data/uploads/
+backend/data/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Vite
+*.local

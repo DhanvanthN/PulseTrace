@@ -1,0 +1,1 @@
+"""Data access layer — populated in Phase 2."""

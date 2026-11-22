@@ -1,0 +1,1 @@
+"""Documented RCA rule weights are configured via Settings (RCA_WEIGHT_* env vars)."""

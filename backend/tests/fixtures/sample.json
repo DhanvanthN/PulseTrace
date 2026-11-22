@@ -1,0 +1,16 @@
+[
+  {
+    "timestamp": "2024-06-02T08:00:00Z",
+    "level": "warning",
+    "service_name": "checkout",
+    "message": "Retrying upstream call",
+    "trace_id": "trace-json-1"
+  },
+  {
+    "timestamp": "2024-06-02T08:00:01Z",
+    "severity": "ERROR",
+    "service": "checkout",
+    "msg": "Upstream unavailable",
+    "request_id": "req-json-1"
+  }
+]

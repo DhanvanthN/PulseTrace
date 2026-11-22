@@ -1,0 +1,4 @@
+timestamp,level,service,message,trace_id,request_id
+2024-06-01T12:00:00Z,INFO,payments-api,Payment processed,trace-abc,req-1
+2024-06-01T12:00:01Z,ERROR,payments-api,Payment timeout,trace-def,req-2
+bad-row-only-message
