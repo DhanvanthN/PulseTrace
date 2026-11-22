@@ -1,5 +1,6 @@
 import { resolveApiBaseUrl } from "@/config/api-base";
 import { buildRequestHeaders } from "@/services/auth-headers";
+import { clearToken } from "@/services/auth-session";
 
 const API_BASE_URL = resolveApiBaseUrl();
 
@@ -27,16 +28,23 @@ export async function fetchJson<T>(
     }),
   });
 
-  if (
+  const isFailedLoginAttempt =
     response.status === 401 &&
-    typeof window !== "undefined" &&
-    import.meta.env.MODE !== "test"
-  ) {
-    const onAuthPage =
-      window.location.pathname.startsWith("/login") ||
-      window.location.pathname.startsWith("/register");
-    if (!onAuthPage) {
-      window.location.assign("/login?session=expired");
+    path === "/api/v1/auth/login" &&
+    (init?.method === undefined || init.method.toUpperCase() === "POST");
+
+  if (response.status === 401 && !isFailedLoginAttempt) {
+    clearToken();
+    if (
+      typeof window !== "undefined" &&
+      import.meta.env.MODE !== "test"
+    ) {
+      const onAuthPage =
+        window.location.pathname.startsWith("/login") ||
+        window.location.pathname.startsWith("/register");
+      if (!onAuthPage) {
+        window.location.assign("/login?session=expired");
+      }
     }
   }
 

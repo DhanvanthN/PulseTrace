@@ -32,7 +32,13 @@ def _set_auth_cookie(response: Response, token: str) -> None:
 
 def _clear_auth_cookie(response: Response) -> None:
     settings = get_settings()
-    response.delete_cookie(key=settings.auth_cookie_name, path="/")
+    response.delete_cookie(
+        key=settings.auth_cookie_name,
+        path="/",
+        httponly=True,
+        secure=settings.auth_cookie_secure or settings.is_production,
+        samesite=settings.auth_cookie_samesite,
+    )
 
 
 def _token_response(user: User, response: Response) -> TokenResponse:

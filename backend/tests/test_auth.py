@@ -105,3 +105,25 @@ def test_expired_token_rejected(client: TestClient) -> None:
 def test_invalid_token_rejected(client: TestClient) -> None:
     response = client.get("/api/v1/auth/me", headers={"Authorization": "Bearer not-a-jwt"})
     assert response.status_code == 401
+
+
+def test_logout_clears_session_cookie(client: TestClient) -> None:
+    creds = _register(client)
+    login = client.post(
+        "/api/v1/auth/login",
+        json={"email": creds["email"], "password": creds["password"]},
+    )
+    assert login.status_code == 200
+    assert client.cookies.get("pulsetrace_access_token")
+
+    logout = client.post("/api/v1/auth/logout")
+    assert logout.status_code == 204
+    assert client.cookies.get("pulsetrace_access_token") is None
+
+    set_cookie_headers = [
+        value.decode() if isinstance(value, bytes) else value
+        for key, value in logout.headers.multi_items()
+        if key.lower() == "set-cookie"
+    ]
+    assert any("pulsetrace_access_token=" in header for header in set_cookie_headers)
+    assert any("httponly" in header.lower() for header in set_cookie_headers)

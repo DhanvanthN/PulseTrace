@@ -103,9 +103,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({
       user: meQuery.isError && !sessionTokenPresent ? null : (meQuery.data ?? null),
       isLoading:
-        sessionTokenPresent && meQuery.isPending && meQuery.fetchStatus !== "idle"
-          ? true
-          : meQuery.isLoading,
+        sessionTokenPresent &&
+        (meQuery.isLoading || (meQuery.isPending && meQuery.fetchStatus !== "idle")),
       isAuthenticated:
         sessionTokenPresent &&
         Boolean(meQuery.data) &&
