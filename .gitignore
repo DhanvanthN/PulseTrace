@@ -34,9 +34,9 @@ frontend/coverage/
 frontend/playwright-report/
 frontend/test-results/
 
-# Logs
+# Runtime log output (*.log files and top-level log dirs — not source packages named `logs`)
 *.log
-logs/
+/logs/
 data/uploads/
 backend/data/
 
