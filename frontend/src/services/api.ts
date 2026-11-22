@@ -1,4 +1,5 @@
 import { resolveApiBaseUrl } from "@/config/api-base";
+import { buildRequestHeaders } from "@/services/auth-headers";
 
 const API_BASE_URL = resolveApiBaseUrl();
 
@@ -20,11 +21,10 @@ export async function fetchJson<T>(
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
     credentials: "include",
-    headers: {
+    headers: buildRequestHeaders(init?.headers, {
       Accept: "application/json",
       "Content-Type": "application/json",
-      ...init?.headers,
-    },
+    }),
   });
 
   if (

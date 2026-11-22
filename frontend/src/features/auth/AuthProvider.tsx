@@ -14,6 +14,7 @@ import {
   registerUser,
 } from "@/services/auth";
 import { ApiError } from "@/services/api";
+import { clearToken, getToken } from "@/services/auth-session";
 import type { LoginPayload, RegisterPayload, User } from "@/types/auth";
 
 interface AuthContextValue {
@@ -37,6 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryFn: fetchCurrentUser,
     retry: false,
     staleTime: 60_000,
+    enabled: getToken() !== null,
   });
 
   const loginMutation = useMutation({
@@ -53,8 +55,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logoutMutation = useMutation({
     mutationFn: logoutUser,
     onSuccess: () => {
+      clearToken();
       queryClient.setQueryData(["auth", "me"], null);
       queryClient.removeQueries({ queryKey: ["projects"] });
+    },
+    onSettled: () => {
+      clearToken();
     },
   });
 
@@ -91,11 +97,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return null;
   }, [loginMutation.error, registerMutation.error, meQuery.error]);
 
+  const sessionTokenPresent = typeof window !== "undefined" && getToken() !== null;
+
   const value = useMemo<AuthContextValue>(
     () => ({
-      user: meQuery.isError ? null : (meQuery.data ?? null),
-      isLoading: meQuery.isLoading,
-      isAuthenticated: Boolean(meQuery.data) && !meQuery.isError,
+      user: meQuery.isError && !sessionTokenPresent ? null : (meQuery.data ?? null),
+      isLoading:
+        sessionTokenPresent && meQuery.isPending && meQuery.fetchStatus !== "idle"
+          ? true
+          : meQuery.isLoading,
+      isAuthenticated:
+        sessionTokenPresent &&
+        Boolean(meQuery.data) &&
+        !meQuery.isError,
       login,
       register,
       logout,
@@ -108,9 +122,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logout,
       meQuery.data,
       meQuery.isError,
+      meQuery.fetchStatus,
       meQuery.isLoading,
+      meQuery.isPending,
       refreshUser,
       register,
+      sessionTokenPresent,
     ]
   );
 

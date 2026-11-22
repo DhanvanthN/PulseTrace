@@ -1,5 +1,6 @@
 import { resolveApiBaseUrl } from "@/config/api-base";
 import { fetchJson } from "@/services/api";
+import { buildRequestHeaders } from "@/services/auth-headers";
 import type {
   LogBatch,
   LogBatchListResponse,
@@ -33,6 +34,7 @@ export async function uploadLogs(
   const response = await fetch(`${API_BASE_URL}/api/v1/projects/${projectId}/logs/upload`, {
     method: "POST",
     credentials: "include",
+    headers: buildRequestHeaders(undefined, { Accept: "application/json" }),
     body: formData,
   });
 
